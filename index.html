@@ -1,0 +1,2229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Insider - Periódico Escolar</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick-theme.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.8.1/slick.min.js"></script>
+    <!-- Configuración de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #f97316;
+            --accent: #8b5cf6;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-color: #0f172a;
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --panel-text: #0f172a;
+        }
+        
+        /* Tema Clásico (actual) */
+        .theme-classic {
+            --primary: #2563eb;
+            --secondary: #f97316;
+            --accent: #8b5cf6;
+            --light: #f8fafc;
+            --dark: #0f172a;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-color: #0f172a;
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --panel-text: #0f172a;
+        }
+        
+        /* Tema Moderno */
+        .theme-modern {
+            --primary: #3b82f6;
+            --secondary: #10b981;
+            --accent: #8b5cf6;
+            --light: #f1f5f9;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-color: #1e293b;
+            --bg-color: #f1f5f9;
+            --panel-bg: #ffffff;
+            --panel-text: #1e293b;
+        }
+        
+        /* Tema Oscuro */
+        .theme-dark {
+            --primary: #60a5fa;
+            --secondary: #f59e0b;
+            --accent: #a78bfa;
+            --light: #1e293b;
+            --dark: #f8fafc;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --text-color: #e2e8f0;
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --panel-text: #e2e8f0;
+        }
+        
+        /* Tema Vibrante */
+        .theme-vibrant {
+            --primary: #6366f1;
+            --secondary: #f59e0b;
+            --accent: #ec4899;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-color: #1e293b;
+            --bg-color: #f8fafc;
+            --panel-bg: #ffffff;
+            --panel-text: #1e293b;
+        }
+        
+        /* Tema Minimalista */
+        .theme-minimal {
+            --primary: #64748b;
+            --secondary: #94a3b8;
+            --accent: #94a3b8;
+            --light: #ffffff;
+            --dark: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-color: #334155;
+            --bg-color: #ffffff;
+            --panel-bg: #f8fafc;
+            --panel-text: #334155;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        body.admin-mode {
+            background: linear-gradient(135deg, #e0e7ff 0%, #dbeafe 100%);
+        }
+        
+        /* Encabezado */
+        header {
+            background: linear-gradient(90deg, var(--primary) 0%, var(--accent) 100%);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        
+        .logo i {
+            color: var(--secondary);
+            font-size: 2.25rem;
+            animation: float 4s ease-in-out infinite;
+        }
+        
+        .date-display {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+        }
+        
+        /* Navegación */
+        .nav-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .nav-dropdown {
+            position: relative;
+        }
+        
+        .nav-dropdown-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+        
+        .nav-dropdown-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 250px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 1rem;
+            display: none;
+            z-index: 10;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .nav-dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            display: block;
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+        
+        .dropdown-content a:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+        
+        /* Diseño principal */
+        .magazine-layout {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2rem;
+        }
+        
+        .main-article-section {
+            grid-column: span 12;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            padding: 2rem;
+            position: relative;
+        }
+
+        .main-article-section .section-header {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .article-container {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .article-container:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .article-container img {
+            width: 100%;
+            height: auto;
+            max-height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .article-content {
+            margin-top: 1.5rem;
+        }
+        
+        .article-tag {
+            display: inline-block;
+            background: var(--secondary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .article-title {
+            font-size: 2.25rem;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+            color: var(--dark);
+        }
+        
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .article-meta .author {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+        
+        .article-body {
+            font-size: 1.1rem;
+            color: #334155;
+            line-height: 1.8;
+        }
+        .article-body::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        .article-body p {
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Columnas estilo revista */
+        .column-layout {
+            margin-top: 1.5rem;
+        }
+        
+        .column-1 {
+            column-count: 1;
+        }
+        
+        .column-2 {
+            column-count: 2;
+            column-gap: 2rem;
+        }
+        
+        .column-3 {
+            column-count: 3;
+            column-gap: 2rem;
+        }
+        
+        /* Sección de collage */
+        .collage-section {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            margin-top: 1rem;
+            position: relative;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .section-title {
+            font-size: 1.75rem;
+            color: var(--dark);
+        }
+        
+        .collage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .collage-item {
+            border-radius: 12px;
+            overflow: hidden;
+            height: 250px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .collage-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .collage-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .collage-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1rem;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .collage-item:hover .collage-caption {
+            transform: translateY(0);
+        }
+        
+        /* Diseño flexible para imágenes */
+        .image-container {
+            margin: 1.5rem 0;
+        }
+        
+        .image-left {
+            float: left;
+            margin-right: 2rem;
+            margin-bottom: 1rem;
+            max-width: 50%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .image-right {
+            float: right;
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+            max-width: 50%;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Image positions within article body */
+        .article-container .image-full {
+            width: 100%;
+            margin: 1.5rem 0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        /* Nuevos estilos para imágenes junto a columnas */
+        .image-column-left {
+            float: left;
+            width: 40%;
+            margin-right: 2rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .image-column-right {
+            float: right;
+            width: 40%;
+            margin-left: 2rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .with-column-image {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+        
+        .column-text {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        /* Carrusel */
+        .carousel-section {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            margin-top: 1rem;
+            position: relative;
+        }
+        
+        .carousel {
+            width: 100%;
+            margin: 1rem 0;
+        }
+        
+        .carousel-item {
+            height: 400px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+        
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .carousel-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Botón de administración */
+        .admin-toggle {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 90;
+            border: none;
+        }
+        
+        .admin-toggle:hover {
+            transform: scale(1.1);
+            background: #1d4ed8;
+        }
+        
+        .admin-toggle .fa-lock-open {
+            display: none;
+        }
+        
+        .admin-mode .admin-toggle .fa-lock {
+            display: none;
+        }
+        
+        .admin-mode .admin-toggle .fa-lock-open {
+            display: block;
+        }
+        
+        /* Panel de administración */
+        .admin-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100%;
+            background: var(--panel-bg);
+            color: var(--panel-text);
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            z-index: 150;
+            transition: right 0.4s ease;
+            padding: 2rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        body.admin-panel-open .admin-panel {
+            right: 0;
+        }
+        
+        /* Modo oscuro solo para panel de administración */
+        .admin-panel.dark-mode {
+            --panel-bg: #1e293b;
+            --panel-text: #f8fafc;
+            --primary: #60a5fa;
+            --secondary: #f59e0b;
+            --accent: #a78bfa;
+            --light: #1e293b;
+            --dark: #f8fafc;
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+        }
+        
+        .admin-panel h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-panel h2 i {
+            color: var(--primary);
+        }
+        
+        .admin-section {
+            margin-bottom: 2rem;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .admin-panel.dark-mode .admin-section {
+            background: #334155;
+            color: #f8fafc;
+        }
+        
+        .admin-section h3 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .admin-section h3 i {
+            font-size: 1.2rem;
+        }
+        
+        .admin-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.5rem;
+            background: white;
+        }
+        
+        .admin-panel.dark-mode .admin-list {
+            background: #1e293b;
+            border-color: #475569;
+        }
+        
+        .admin-list li {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+        
+        .admin-panel.dark-mode .admin-list li {
+            border-color: #475569;
+        }
+        
+        .admin-list li:last-child {
+            border-bottom: none;
+        }
+
+        .admin-list li span {
+            flex-grow: 1;
+            margin-right: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .admin-list-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .admin-list-btn {
+            background: #e2e8f0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .admin-panel.dark-mode .admin-list-btn {
+            background: #475569;
+            color: #f8fafc;
+        }
+        
+        .admin-list-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .admin-list-btn.edit { color: var(--warning); }
+        .admin-list-btn.delete { color: var(--danger); }
+        .admin-list-btn.password { color: var(--success); }
+        
+        /* Botones de edición en contenido */
+        .edit-buttons {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: none;
+            gap: 0.5rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .admin-mode .edit-buttons {
+            display: flex;
+            pointer-events: auto;
+        }
+
+        /* Specific positioning for article container */
+        .article-container .edit-buttons {
+             top: 0.75rem;
+             right: 0.75rem;
+        }
+        
+        .edit-button {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            pointer-events: auto;
+        }
+        
+        .edit-button:hover {
+            transform: scale(1.1);
+        }
+        
+        .edit-button.edit { color: var(--primary); }
+        .edit-button.delete { color: var(--danger); }
+        
+        /* Modales */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 200;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 600px;
+            padding: 2rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .modal-title {
+            font-size: 1.75rem;
+            color: var(--dark);
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--dark);
+            transition: all 0.2s;
+        }
+        
+        .close-modal:hover {
+            color: var(--danger);
+            transform: scale(1.1);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+        
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2); }
+        .btn-secondary { background: #e2e8f0; color: var(--dark); }
+        .btn-secondary:hover { background: #cbd5e1; }
+        
+        .image-position-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .image-position-option { text-align: center; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+        .image-position-option:hover { border-color: var(--primary); background: #dbeafe; }
+        .image-position-option.selected { border-color: var(--primary); background: #dbeafe; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+        .image-position-option i { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .image-position-option div { font-size: 0.9rem; font-weight: 500; }
+        
+        .column-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .column-option { text-align: center; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; }
+        .column-option:hover { border-color: var(--primary); background: #dbeafe; }
+        .column-option.selected { border-color: var(--primary); background: #dbeafe; box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+        .column-option i { font-size: 2rem; margin-bottom: 0.5rem; color: var(--primary); }
+        .column-option div { font-size: 0.9rem; font-weight: 500; }
+        
+        .theme-selector { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .theme-option { text-align: center; padding: 1rem; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; background: var(--bg-color); color: var(--text-color); }
+        .theme-option:hover { border-color: var(--primary); }
+        .theme-option.selected { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.3); }
+        .theme-option .theme-preview { width: 100%; height: 40px; border-radius: 4px; margin-bottom: 0.5rem; background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%); }
+        .theme-option div { font-size: 0.9rem; font-weight: 500; }
+        
+        /* Pie de página */
+        footer { background: var(--dark); color: white; padding: 3rem 1rem; margin-top: 4rem; }
+        .footer-content { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; }
+        .footer-section h3 { font-size: 1.25rem; margin-bottom: 1.5rem; position: relative; padding-bottom: 0.75rem; }
+        .footer-section h3::after { content: ''; position: absolute; bottom: 0; left: 0; width: 50px; height: 3px; background: var(--secondary); }
+        .footer-links { display: flex; flex-direction: column; gap: 0.75rem; }
+        .footer-links a { color: #cbd5e1; text-decoration: none; transition: all 0.3s; display: flex; align-items: center; gap: 0.5rem; }
+        .footer-links a:hover { color: white; transform: translateX(5px); }
+        .social-links { display: flex; gap: 1rem; margin-top: 1rem; }
+        .social-links a { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #1e293b; color: white; transition: all 0.3s; }
+        .social-links a:hover { background: var(--primary); transform: translateY(-3px); }
+        .copyright { text-align: center; padding-top: 2rem; margin-top: 2rem; border-top: 1px solid #334155; color: #94a3b8; font-size: 0.9rem; }
+        
+        /* Animaciones */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0); } }
+        .floating { animation: float 4s ease-in-out infinite; }
+        
+        /* Notificaciones */
+        .toast { position: fixed; top: 1.5rem; right: 1.5rem; padding: 1rem 1.5rem; background: white; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; gap: 0.75rem; animation: slideIn 0.3s ease-out, fadeOut 0.5s ease-in 3.5s forwards; border-left: 4px solid var(--primary); min-width: 200px; }
+        .toast.success { border-color: var(--success); }
+        .toast.error { border-color: var(--danger); }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+        
+        /* Estado de sincronización */
+        .sync-status {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 50px;
+            background: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 90;
+        }
+        .sync-status.offline {
+            background: var(--warning);
+        }
+        .sync-status.error {
+            background: var(--danger);
+        }
+        .pending-changes {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--danger);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .review-section {
+            background: rgba(255, 243, 205, 0.5);
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+        }
+        .review-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Diseño responsive */
+        @media (max-width: 1100px) {
+            .magazine-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .main-article-section, .collage-section { grid-column: 1 / -1; padding: 1.5rem; }
+            .article-container { padding: 1.5rem; }
+            .image-left, .image-right, .image-column-left, .image-column-right { float: none; margin: 1rem 0; max-width: 100%; width: 100%; }
+            .column-2, .column-3 { column-count: 1; }
+            .admin-panel { width: 100%; right: -100%; }
+        }
+        
+        @media (max-width: 768px) {
+            .header-container { flex-direction: column; align-items: flex-start; }
+            .nav-container { flex-wrap: wrap; width: 100%; margin-top: 1rem; }
+            .nav-dropdown-btn { width: 100%; justify-content: center; padding: 1rem; }
+            .dropdown-content { width: 100%; position: static; margin-top: 0.5rem; box-shadow: none; border: 1px solid #e2e8f0; }
+            .nav-dropdown:focus-within .dropdown-content { display: block; }
+            .article-title { font-size: 1.75rem; }
+            .admin-panel { padding: 1rem; }
+            .modal-content { padding: 1.5rem; }
+            .modal-title { font-size: 1.5rem; }
+            .form-actions { flex-direction: column; gap: 0.75rem; }
+            .btn { width: 100%; }
+            .image-position-options, .column-options, .theme-selector { grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); }
+            .footer-content { gap: 2rem; }
+            .footer-section h3 { margin-bottom: 1rem; }
+            .admin-toggle { width: 60px; height: 60px; font-size: 1.5rem; bottom: 2rem; right: 2rem; }
+            .edit-button { width: 44px; height: 44px; font-size: 1.1rem; }
+            .admin-list-btn { width: 36px; height: 36px; font-size: 1rem; }
+            .btn { padding: 1rem; }
+            .sync-status { bottom: 5rem; left: 1rem; }
+        }
+    </style>
+</head>
+<body class="theme-classic">
+    <!-- Encabezado -->
+    <header>
+        <div class="header-container">
+            <div class="logo">
+                <i class="fas fa-newspaper floating"></i>
+                <span>The Insider</span>
+            </div>
+            
+            <div class="date-display">
+                <i class="far fa-calendar"></i>
+                <span id="current-date"></span>
+            </div>
+            
+            <div class="nav-container">
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-btn">
+                        <i class="fas fa-bars"></i> Secciones
+                    </button>
+                    <div class="dropdown-content" id="sections-dropdown">
+                        <!-- Secciones se generarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Diseño principal -->
+    <div class="magazine-layout" id="main-content">
+        <!-- Contenido se generará dinámicamente -->
+    </div>
+    
+    <!-- Estado de sincronización -->
+    <div class="sync-status" id="sync-status">
+        <i class="fas fa-cloud"></i>
+        <span>Sincronizado</span>
+    </div>
+    
+    <!-- Botón de administración -->
+    <button class="admin-toggle" id="admin-toggle-btn" title="Alternar modo administrador">
+        <i class="fas fa-lock"></i>
+        <i class="fas fa-lock-open"></i>
+    </button>
+    
+    <!-- Panel de administración -->
+    <div class="admin-panel" id="admin-panel">
+        <h2><i class="fas fa-cog"></i> Panel de Administración</h2>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-folder-plus"></i> Gestionar Secciones</h3>
+            <ul class="admin-list" id="sections-list">
+                <!-- Secciones se generarán dinámicamente -->
+            </ul>
+            <button class="btn btn-primary" id="add-section-btn" style="width: 100%; margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Añadir Sección
+            </button>
+        </div>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-newspaper"></i> Gestionar Artículos</h3>
+            <ul class="admin-list" id="articles-list">
+                <!-- Artículos se generarán dinámicamente -->
+            </ul>
+        </div>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-images"></i> Gestionar Galerías</h3>
+            <ul class="admin-list" id="collages-list">
+                <!-- Collages se generarán dinámicamente -->
+            </ul>
+            <button class="btn btn-primary" id="add-collage-btn" style="width: 100%; margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Añadir Galería
+            </button>
+        </div>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-palette"></i> Configuración de Apariencia</h3>
+            <label>Modo oscuro del panel:</label>
+            <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
+                <button class="btn btn-secondary" id="dark-mode-btn" style="flex: 1;">
+                    <i class="fas fa-moon"></i> Oscuro
+                </button>
+                <button class="btn btn-secondary" id="light-mode-btn" style="flex: 1;">
+                    <i class="fas fa-sun"></i> Claro
+                </button>
+            </div>
+            
+            <label style="margin-top: 1rem;">Tema de interfaz:</label>
+            <div class="theme-selector" id="theme-selector">
+                <div class="theme-option selected" data-theme="classic">
+                    <div class="theme-preview"></div>
+                    <div>Clásico</div>
+                </div>
+                <div class="theme-option" data-theme="modern">
+                    <div class="theme-preview"></div>
+                    <div>Moderno</div>
+                </div>
+                <div class="theme-option" data-theme="dark">
+                    <div class="theme-preview"></div>
+                    <div>Oscuro</div>
+                </div>
+                <div class="theme-option" data-theme="vibrant">
+                    <div class="theme-preview"></div>
+                    <div>Vibrante</div>
+                </div>
+                <div class="theme-option" data-theme="minimal">
+                    <div class="theme-preview"></div>
+                    <div>Minimalista</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-save"></i> Guardar Cambios</h3>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Guarda todos los cambios realizados (añadir, editar, eliminar) en tu navegador.</p>
+            <button class="btn btn-primary" id="save-all-btn" style="width: 100%;">
+                <i class="fas fa-save"></i> Guardar Todo
+            </button>
+        </div>
+        
+        <div class="admin-section">
+            <h3><i class="fas fa-download"></i> Exportar Periódico</h3>
+            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Genera archivos HTML o PDF del periódico actual.</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <button class="btn btn-secondary" id="download-html-btn">
+                    <i class="fas fa-file-code"></i> HTML
+                </button>
+                <button class="btn btn-secondary" id="download-pdf-btn">
+                    <i class="fas fa-file-pdf"></i> PDF
+                </button>
+            </div>
+        </div>
+        
+        <div class="form-actions" style="margin-top: 2rem;">
+            <button class="btn btn-secondary" id="close-panel-btn" style="width: 100%;">
+                <i class="fas fa-times"></i> Cerrar Panel
+            </button>
+        </div>
+    </div>
+    
+    <!-- Modal para editar sección -->
+    <div class="modal" id="edit-section-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Editar Sección</h3>
+                <button type="button" class="close-modal" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="section-name">Nombre de la sección:</label>
+                    <input type="text" id="section-name" placeholder="Nombre de la sección">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-section">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modales de login, artículo y collage -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Acceso Administrador</h3>
+                <button type="button" class="close-modal" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <form>
+                <div class="form-group">
+                    <label for="admin-password">Contraseña:</label>
+                    <input type="password" id="admin-password" placeholder="Introduce la contraseña">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirm-login">Acceder</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="article-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="article-modal-title">Añadir Nuevo Artículo</h3>
+                <button type="button" class="close-modal" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <form id="article-form">
+                <div class="form-group">
+                    <label for="article-modal-title-input">Título:</label>
+                    <input type="text" id="article-modal-title-input" placeholder="Título del artículo">
+                </div>
+                <div class="form-group">
+                    <label for="article-modal-section-select">Sección:</label>
+                    <select id="article-modal-section-select">
+                        <!-- Secciones se generarán dinámicamente -->
+                    </select>
+                </div>
+                 <div class="form-group">
+                    <label for="article-modal-image-url">URL de la imagen (opcional):</label>
+                    <input type="text" id="article-modal-image-url" placeholder="https://ejemplo.com/imagen.jpg">
+                </div>
+                <div class="form-group">
+                    <label>Posición de la imagen:</label>
+                    <div class="image-position-options" id="article-image-position-options">
+                        <div class="image-position-option selected" data-position="top"> <i class="fas fa-align-center"></i> <div>Arriba</div> </div>
+                        <div class="image-position-option" data-position="left"> <i class="fas fa-align-left"></i> <div>Izquierda</div> </div>
+                        <div class="image-position-option" data-position="right"> <i class="fas fa-align-right"></i> <div>Derecha</div> </div>
+                        <div class="image-position-option" data-position="bottom"> <i class="fas fa-align-justify"></i> <div>Debajo</div> </div>
+                        <div class="image-position-option" data-position="column-left"> <i class="fas fa-columns"></i> <div>Columna Izq.</div> </div>
+                        <div class="image-position-option" data-position="column-right"> <i class="fas fa-columns"></i> <div>Columna Der.</div> </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Columnas de texto:</label>
+                    <div class="column-options" id="article-column-options">
+                        <div class="column-option selected" data-columns="1"> <i class="fas fa-align-justify"></i> <div>1 Columna</div> </div>
+                        <div class="column-option" data-columns="2"> <i class="fas fa-columns"></i> <div>2 Columnas</div> </div>
+                        <div class="column-option" data-columns="3"> <i class="fas fa-columns"></i> <div>3 Columnas</div> </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="article-modal-content-textarea">Contenido:</label>
+                    <textarea id="article-modal-content-textarea" placeholder="Escribe el contenido del artículo aquí..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-article-modal">Guardar Artículo</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="modal" id="collage-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="collage-modal-title">Añadir Nueva Galería</h3>
+                <button type="button" class="close-modal" aria-label="Cerrar modal">&times;</button>
+            </div>
+            <form id="collage-form">
+                <div class="form-group">
+                    <label for="collage-modal-title-input">Título de la Galería:</label>
+                    <input type="text" id="collage-modal-title-input" placeholder="Título de la galería">
+                </div>
+                <div class="form-group">
+                    <label for="collage-modal-description-textarea">Descripción:</label>
+                    <textarea id="collage-modal-description-textarea" placeholder="Descripción de la galería"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de visualización:</label>
+                    <div class="image-position-options" id="collage-display-options">
+                        <div class="image-position-option selected" data-display="grid"> <i class="fas fa-th"></i> <div>Cuadrícula</div> </div>
+                        <div class="image-position-option" data-display="carousel"> <i class="fas fa-images"></i> <div>Carrusel</div> </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="collage-modal-images-textarea">URLs de las imágenes (separadas por coma):</label>
+                    <textarea id="collage-modal-images-textarea" placeholder="https://imagen1.jpg, https://imagen2.jpg, ..."></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary close-modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="save-collage-modal">Guardar Galería</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Pie de página -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>The Insider</h3>
+                <p>El periódico estudiantil que lleva la voz de nuestra comunidad educativa. Informando, educando y conectando.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-section"> <h3>Secciones</h3> <div class="footer-links" id="footer-sections"> <!-- Se generarán dinámicamente --> </div> </div>
+            <div class="footer-section">
+                <h3>Enlaces Rápidos</h3>
+                <div class="footer-links">
+                    <a href="#"><i class="fas fa-chevron-right"></i> Calendario Escolar</a>
+                    <a href="#"><i class="fas fa-chevron-right"></i> Galería Multimedia</a>
+                    <a href="#"><i class="fas fa-chevron-right"></i> Convocatorias</a>
+                    <a href="#"><i class="fas fa-chevron-right"></i> Contacto</a>
+                    <a href="#"><i class="fas fa-chevron-right"></i> Equipo Editorial</a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Contacto</h3>
+                <div class="footer-links">
+                    <a href="mailto:contacto@theinsider.edu"><i class="fas fa-envelope"></i> contacto@theinsider.edu</a>
+                    <a href="tel:5551234567"><i class="fas fa-phone"></i> (555) 123-4567</a>
+                    <a href="#"><i class="fas fa-map-marker-alt"></i> Av. Educación 123, Ciudad</a>
+                </div>
+            </div>
+        </div>
+        <div class="copyright"> &copy; <span id="current-year">2024</span> The Insider - Periódico Escolar. Todos los derechos reservados. </div>
+    </footer>
+    
+    <script>
+        // --- CONFIGURACIÓN FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDEXAMPLEEXAMPLEEXAMPLE",
+            authDomain: "tu-proyecto.firebaseapp.com",
+            projectId: "tu-proyecto",
+            storageBucket: "tu-proyecto.appspot.com",
+            messagingSenderId: "123456789012",
+            appId: "1:123456789012:web:abc123def456ghi789jkl"
+        };
+
+        // Inicializar Firebase
+        let firebaseInitialized = false;
+        let db, auth;
+        try {
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.firestore();
+            auth = firebase.auth();
+            firebaseInitialized = true;
+            console.log("Firebase inicializado correctamente");
+        } catch (e) {
+            console.warn("Error al inicializar Firebase. Modo offline activado", e);
+        }
+
+        // --- DATA ---
+        let newspaperData = {
+            sections: [
+                { id: 'section-1', title: 'Noticias Principales', articles: [] }
+            ],
+            collages: [],
+            settings: { adminDarkMode: false, theme: 'classic', published: false },
+            masterPassword: 'admin123',
+            sectionPasswords: {},
+            pendingChanges: false,
+            lastUpdated: new Date().toISOString()
+        };
+        
+        // --- APP STATE ---
+        let isAdminMode = false, currentEditArticleId = null, currentEditCollageId = null, currentEditSectionId = null;
+        let isMasterAdmin = false, currentEditorSectionId = null;
+        let isOnline = false;
+        let currentUser = null;
+        let unsubscribe = null;
+
+        // --- DOM ELEMENTS ---
+        const mainContent = document.getElementById('main-content');
+        const sectionsDropdown = document.getElementById('sections-dropdown');
+        const footerSections = document.getElementById('footer-sections');
+        const sectionsList = document.getElementById('sections-list');
+        const articlesList = document.getElementById('articles-list');
+        const collagesList = document.getElementById('collages-list');
+        const editSectionModal = document.getElementById('edit-section-modal');
+        const sectionNameInput = document.getElementById('section-name');
+        const saveSectionButton = document.getElementById('save-section');
+        const articleModal = document.getElementById('article-modal');
+        const articleModalTitle = document.getElementById('article-modal-title');
+        const articleModalTitleInput = document.getElementById('article-modal-title-input');
+        const articleModalSectionSelect = document.getElementById('article-modal-section-select');
+        const articleModalContentTextarea = document.getElementById('article-modal-content-textarea');
+        const articleModalImageUrlInput = document.getElementById('article-modal-image-url');
+        const articleImagePositionOptions = document.getElementById('article-image-position-options');
+        const articleColumnOptions = document.getElementById('article-column-options');
+        const saveArticleModalButton = document.getElementById('save-article-modal');
+        const collageModal = document.getElementById('collage-modal');
+        const collageModalTitle = document.getElementById('collage-modal-title');
+        const collageModalTitleInput = document.getElementById('collage-modal-title-input');
+        const collageModalDescriptionTextarea = document.getElementById('collage-modal-description-textarea');
+        const collageModalImagesTextarea = document.getElementById('collage-modal-images-textarea');
+        const collageDisplayOptions = document.getElementById('collage-display-options');
+        const saveCollageModalButton = document.getElementById('save-collage-modal');
+        const adminPanel = document.getElementById('admin-panel');
+        const adminToggleButton = document.getElementById('admin-toggle-btn');
+        const adminPasswordInput = document.getElementById('admin-password');
+        const loginModal = document.getElementById('login-modal');
+        const darkModeBtn = document.getElementById('dark-mode-btn');
+        const lightModeBtn = document.getElementById('light-mode-btn');
+        const themeSelector = document.getElementById('theme-selector');
+        const syncStatus = document.getElementById('sync-status');
+
+        // --- INITIALIZATION ---
+        async function init() {
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('current-year').textContent = now.getFullYear();
+            
+            // Verificar conexión
+            checkOnlineStatus();
+            window.addEventListener('online', () => checkOnlineStatus());
+            window.addEventListener('offline', () => checkOnlineStatus());
+            
+            // Cargar datos
+            await loadNewspaperData();
+            applyThemeSettings();
+            renderNewspaper();
+            setupEventListeners();
+            
+            // Si es admin, intentar autenticar
+            if (isAdminMode && isMasterAdmin && firebaseInitialized) {
+                try {
+                    await auth.signInAnonymously();
+                    currentUser = auth.currentUser;
+                    setupRealtimeUpdates();
+                } catch (e) {
+                    console.error("Error en autenticación Firebase:", e);
+                }
+            }
+        }
+
+        function checkOnlineStatus() {
+            isOnline = navigator.onLine;
+            if (isOnline) {
+                syncStatus.innerHTML = '<i class="fas fa-cloud"></i><span>Sincronizado</span>';
+                syncStatus.className = 'sync-status';
+                if (isMasterAdmin && firebaseInitialized) {
+                    syncLocalChangesToFirebase();
+                }
+            } else {
+                syncStatus.innerHTML = '<i class="fas fa-cloud-slash"></i><span>Modo offline</span>';
+                syncStatus.className = 'sync-status offline';
+            }
+        }
+
+        // --- DATA HANDLING ---
+        async function loadNewspaperData() {
+            // Primero intentar cargar de localStorage
+            const savedData = localStorage.getItem('newspaperData');
+            if (savedData) {
+                try {
+                    const parsedData = JSON.parse(savedData);
+                    if (parsedData) {
+                        if (Array.isArray(parsedData.sections)) newspaperData.sections = parsedData.sections;
+                        if (Array.isArray(parsedData.collages)) newspaperData.collages = parsedData.collages;
+                        if (typeof parsedData.settings === 'object' && parsedData.settings !== null) {
+                            newspaperData.settings = { ...newspaperData.settings, ...parsedData.settings };
+                        }
+                        if (typeof parsedData.sectionPasswords === 'object') {
+                            newspaperData.sectionPasswords = { ...newspaperData.sectionPasswords, ...parsedData.sectionPasswords };
+                        }
+                        if (parsedData.lastUpdated) newspaperData.lastUpdated = parsedData.lastUpdated;
+                    }
+                } catch (e) { console.error("Error al parsear datos de localStorage:", e); }
+            }
+
+            // Si es admin maestro y hay conexión, cargar de Firebase
+            if (isMasterAdmin && firebaseInitialized && isOnline) {
+                try {
+                    const doc = await db.collection('newspapers').doc('current').get();
+                    if (doc.exists) {
+                        const firebaseData = doc.data();
+                        if (new Date(firebaseData.lastUpdated) > new Date(newspaperData.lastUpdated)) {
+                            // Los datos de Firebase son más recientes
+                            newspaperData = { ...newspaperData, ...firebaseData };
+                            showToast('Datos sincronizados desde la nube', 'success');
+                        } else if (newspaperData.pendingChanges) {
+                            // Tenemos cambios locales más recientes
+                            await syncLocalChangesToFirebase();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error al cargar de Firebase:", e);
+                    showToast('Error al sincronizar con la nube', 'error');
+                }
+            }
+        }
+
+        async function saveAllChanges() {
+            try {
+                newspaperData.lastUpdated = new Date().toISOString();
+                const dataToSave = { 
+                    sections: newspaperData.sections, 
+                    collages: newspaperData.collages, 
+                    settings: newspaperData.settings, 
+                    sectionPasswords: newspaperData.sectionPasswords,
+                    lastUpdated: newspaperData.lastUpdated,
+                    pendingChanges: false
+                };
+                
+                // Guardar en localStorage siempre
+                localStorage.setItem('newspaperData', JSON.stringify(dataToSave));
+                
+                // Si es admin maestro y está online, guardar en Firebase
+                if (isMasterAdmin && firebaseInitialized && isOnline) {
+                    newspaperData.pendingChanges = true;
+                    await syncLocalChangesToFirebase();
+                } else if (isMasterAdmin) {
+                    newspaperData.pendingChanges = true;
+                }
+                
+                showToast('Todos los cambios guardados', 'success');
+            } catch (e) { 
+                showToast('Error al guardar cambios', 'error');
+                console.error("Error al guardar:", e);
+            }
+        }
+
+        async function syncLocalChangesToFirebase() {
+            if (!isMasterAdmin || !firebaseInitialized || !isOnline) return;
+            
+            try {
+                await db.collection('newspapers').doc('current').set({
+                    sections: newspaperData.sections,
+                    collages: newspaperData.collages,
+                    settings: newspaperData.settings,
+                    sectionPasswords: newspaperData.sectionPasswords,
+                    lastUpdated: new Date().toISOString(),
+                    pendingChanges: false
+                }, { merge: true });
+                
+                newspaperData.pendingChanges = false;
+                localStorage.setItem('newspaperData', JSON.stringify(newspaperData));
+                showToast('Cambios sincronizados con la nube', 'success');
+            } catch (e) {
+                console.error("Error al sincronizar con Firebase:", e);
+                showToast('Error al sincronizar con la nube', 'error');
+            }
+        }
+
+        function setupRealtimeUpdates() {
+            if (!isMasterAdmin || !firebaseInitialized || unsubscribe) return;
+            
+            unsubscribe = db.collection('newspapers').doc('current')
+                .onSnapshot((doc) => {
+                    if (doc.exists) {
+                        const firebaseData = doc.data();
+                        // Solo actualizar si los datos son más recientes
+                        if (new Date(firebaseData.lastUpdated) > new Date(newspaperData.lastUpdated)) {
+                            // Conservar cambios locales no guardados
+                            const localChanges = newspaperData.pendingChanges;
+                            
+                            // Actualizar datos
+                            newspaperData.sections = firebaseData.sections || newspaperData.sections;
+                            newspaperData.collages = firebaseData.collages || newspaperData.collages;
+                            newspaperData.settings = { ...newspaperData.settings, ...firebaseData.settings };
+                            newspaperData.sectionPasswords = { ...newspaperData.sectionPasswords, ...firebaseData.sectionPasswords };
+                            newspaperData.lastUpdated = firebaseData.lastUpdated;
+                            newspaperData.pendingChanges = localChanges;
+                            
+                            // Guardar en localStorage
+                            localStorage.setItem('newspaperData', JSON.stringify(newspaperData));
+                            
+                            // Renderizar cambios
+                            renderNewspaper();
+                            applyThemeSettings();
+                            
+                            showToast('Datos actualizados desde la nube', 'success');
+                        }
+                    }
+                }, (error) => {
+                    console.error("Error en actualización en tiempo real:", error);
+                });
+        }
+
+        // --- RENDERING ---
+        function renderNewspaper() {
+            [mainContent, sectionsDropdown, footerSections, sectionsList, articlesList, collagesList, articleModalSectionSelect].forEach(el => el.innerHTML = '');
+            const defaultOption = document.createElement('option');
+            defaultOption.value = ''; defaultOption.textContent = '-- Seleccionar Sección --'; defaultOption.disabled = true; defaultOption.selected = true;
+            articleModalSectionSelect.appendChild(defaultOption);
+
+            newspaperData.sections.forEach(section => {
+                const sectionLink = document.createElement('a'); sectionLink.href = `#${section.id}`; sectionLink.innerHTML = `<i class="fas fa-folder"></i> ${section.title}`; sectionsDropdown.appendChild(sectionLink);
+                const footerLink = document.createElement('a'); footerLink.href = `#${section.id}`; footerLink.innerHTML = `<i class="fas fa-chevron-right"></i> ${section.title}`; footerSections.appendChild(footerLink);
+                
+                const sectionItem = document.createElement('li'); sectionItem.dataset.id = section.id;
+                sectionItem.innerHTML = `
+                    <span>${section.title}</span>
+                    <div class="admin-list-actions">
+                        <button type="button" class="admin-list-btn password" data-id="${section.id}" title="Gestionar Contraseña"><i class="fas fa-key"></i></button>
+                        <button type="button" class="admin-list-btn edit" data-id="${section.id}" title="Editar Sección"><i class="fas fa-edit"></i></button>
+                        <button type="button" class="admin-list-btn delete" data-id="${section.id}" title="Eliminar Sección"><i class="fas fa-trash"></i></button>
+                    </div>`;
+                sectionsList.appendChild(sectionItem);
+                
+                const option = document.createElement('option'); option.value = section.id; option.textContent = section.title; articleModalSectionSelect.appendChild(option);
+            });
+            
+            newspaperData.sections.forEach(section => {
+                const sectionElement = document.createElement('section'); sectionElement.id = section.id; sectionElement.className = 'main-article-section';
+                sectionElement.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">${section.title}</h2>
+                        <div class="edit-buttons">
+                            ${isMasterAdmin ? `<button type="button" class="edit-button edit-section" data-id="${section.id}" title="Editar Sección"><i class="fas fa-edit"></i></button><button type="button" class="edit-button delete-section" data-id="${section.id}" title="Eliminar Sección"><i class="fas fa-trash"></i></button>` : ''}
+                            ${(isMasterAdmin || currentEditorSectionId === section.id) ? `<button type="button" class="edit-button add-article" data-section-id="${section.id}" title="Añadir Artículo"><i class="fas fa-plus"></i></button>` : ''}
+                        </div>
+                    </div>`;
+                
+                // Mostrar notificación de revisión si es necesario
+                if (isMasterAdmin && section.needReview) {
+                    const reviewDiv = document.createElement('div');
+                    reviewDiv.className = 'review-section';
+                    reviewDiv.innerHTML = `
+                        <p><strong>Esta sección tiene cambios pendientes de revisión.</strong></p>
+                        <div class="review-actions">
+                            <button class="btn btn-primary approve-section" data-id="${section.id}">
+                                <i class="fas fa-check"></i> Aprobar
+                            </button>
+                            <button class="btn btn-secondary reject-section" data-id="${section.id}">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                        </div>
+                    `;
+                    sectionElement.appendChild(reviewDiv);
+                }
+                
+                section.articles.forEach(article => {
+                    const articleElement = document.createElement('article'); articleElement.className = 'article-container'; articleElement.dataset.id = article.id;
+                    articleElement.innerHTML = `
+                        <div class="edit-buttons">
+                             ${(isMasterAdmin || currentEditorSectionId === section.id) ? `<button type="button" class="edit-button edit-article" data-id="${article.id}" title="Editar Artículo"><i class="fas fa-edit"></i></button><button type="button" class="edit-button delete-article" data-id="${article.id}" title="Eliminar Artículo"><i class="fas fa-trash"></i></button>` : ''}
+                        </div>`;
+                    
+                    let imageHtml = '';
+                    if (article.image) {
+                        let imageClass = 'image-full';
+                        if (['left', 'right', 'column-left', 'column-right'].includes(article.imagePosition)) imageClass = `image-${article.imagePosition}`;
+                        imageHtml = `<div class="${imageClass}"><img src="${article.image}" alt="${article.title}"></div>`;
+                    }
+                    
+                    const contentHtml = `
+                        <span class="article-tag">${article.tag || section.title}</span>
+                        <h3 class="article-title">${article.title}</h3>
+                        <div class="article-body">
+                            ${article.imagePosition !== 'bottom' ? imageHtml : ''}
+                            <div class="column-layout column-${article.columns || 1}">${article.content.split('\n').map(p => `<p>${p}</p>`).join('')}</div>
+                            ${article.imagePosition === 'bottom' ? imageHtml : ''}
+                        </div>`;
+                    articleElement.innerHTML += contentHtml;
+                    sectionElement.appendChild(articleElement);
+
+                    if (isMasterAdmin) {
+                        const articleItem = document.createElement('li'); articleItem.dataset.id = article.id;
+                        articleItem.innerHTML = `<span>${article.title}</span><div class="admin-list-actions"><button type="button" class="admin-list-btn edit" data-id="${article.id}" title="Editar"><i class="fas fa-edit"></i></button><button type="button" class="admin-list-btn delete" data-id="${article.id}" title="Eliminar"><i class="fas fa-trash"></i></button></div>`;
+                        articlesList.appendChild(articleItem);
+                    }
+                });
+                mainContent.appendChild(sectionElement);
+            });
+            
+            if (newspaperData.collages.length > 0) {
+                const collageWrapper = document.createElement('div'); collageWrapper.className = 'main-article-section';
+                collageWrapper.innerHTML = `
+                    <div class="section-header">
+                        <h2 class="section-title">Galerías</h2>
+                        <div class="edit-buttons">${isMasterAdmin ? `<button type="button" class="edit-button add-collage" title="Añadir Galería"><i class="fas fa-plus"></i></button>` : ''}</div>
+                    </div>`;
+                
+                newspaperData.collages.forEach(collage => {
+                    const collageContainer = document.createElement('div');
+                    collageContainer.className = 'collage-section';
+                    collageContainer.style.cssText = 'margin-top:0; box-shadow:none; padding:1.5rem 0;';
+                    let contentHtml = `<h3 style="font-size:1.5rem; margin-bottom:0.5rem;">${collage.title}</h3><p style="margin-bottom:1.5rem; color:#64748b;">${collage.description || ''}</p>`;
+                    contentHtml += collage.display === 'carousel' ? `<div class="carousel">${collage.images.map(img => `<div class="carousel-item"><img src="${img}" alt="${collage.title}"></div>`).join('')}</div>` : `<div class="collage-grid">${collage.images.map(img => `<div class="collage-item"><img src="${img}" alt="${collage.title}"><div class="collage-caption">${collage.title}</div></div>`).join('')}</div>`;
+                    collageContainer.innerHTML = contentHtml;
+                    collageWrapper.appendChild(collageContainer);
+                    if (collage.display === 'carousel') $(collageContainer.querySelector('.carousel')).slick({ dots: true, infinite: true, speed: 500, autoplay: true, arrows: true, adaptiveHeight: true });
+
+                    if(isMasterAdmin) {
+                        const collageItem = document.createElement('li'); collageItem.dataset.id = collage.id;
+                        collageItem.innerHTML = `<span>${collage.title}</span><div class="admin-list-actions"><button type="button" class="admin-list-btn edit" data-id="${collage.id}" title="Editar"><i class="fas fa-edit"></i></button><button type="button" class="admin-list-btn delete" data-id="${collage.id}" title="Eliminar"><i class="fas fa-trash"></i></button></div>`;
+                        collagesList.appendChild(collageItem);
+                    }
+                });
+                mainContent.appendChild(collageWrapper);
+            }
+            
+            // Actualizar estado de sincronización
+            if (isMasterAdmin && newspaperData.pendingChanges) {
+                syncStatus.innerHTML = '<i class="fas fa-cloud-upload-alt"></i><span>Cambios pendientes</span><div class="pending-changes">!</div>';
+                syncStatus.className = 'sync-status offline';
+            }
+            
+            updateAdminModeUI();
+        }
+
+        // --- UI & EVENT HANDLING ---
+        function setupEventListeners() {
+            adminToggleButton.addEventListener('click', toggleAdminMode);
+            adminToggleButton.addEventListener('touchstart', toggleAdminMode);
+            document.getElementById('confirm-login').addEventListener('click', confirmAdminLogin);
+            adminPasswordInput.addEventListener('keypress', e => { if (e.key === 'Enter') { e.preventDefault(); confirmAdminLogin(); } });
+            
+            document.getElementById('add-section-btn').addEventListener('click', addNewSection);
+            document.getElementById('add-collage-btn').addEventListener('click', showCollageModal);
+            document.getElementById('close-panel-btn').addEventListener('click', () => document.body.classList.remove('admin-panel-open'));
+            document.getElementById('save-all-btn').addEventListener('click', saveAllChanges);
+            document.getElementById('download-html-btn').addEventListener('click', downloadNewspaperHTML);
+            document.getElementById('download-pdf-btn').addEventListener('click', downloadNewspaperPDF);
+            darkModeBtn.addEventListener('click', () => { newspaperData.settings.adminDarkMode = true; applyThemeSettings(); });
+            lightModeBtn.addEventListener('click', () => { newspaperData.settings.adminDarkMode = false; applyThemeSettings(); });
+            themeSelector.addEventListener('click', e => { const option = e.target.closest('.theme-option'); if (option) { newspaperData.settings.theme = option.dataset.theme; applyThemeSettings(); } });
+            saveSectionButton.addEventListener('click', saveSectionChanges);
+            saveArticleModalButton.addEventListener('click', saveArticle);
+            saveCollageModalButton.addEventListener('click', saveCollage);
+            
+            document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal.id); }));
+            document.querySelectorAll('.close-modal').forEach(btn => btn.addEventListener('click', e => closeModal(e.target.closest('.modal').id)));
+            
+            articleImagePositionOptions.addEventListener('click', e => handleOptionSelection(e, '#article-image-position-options .image-position-option'));
+            articleColumnOptions.addEventListener('click', e => handleOptionSelection(e, '#article-column-options .column-option'));
+            collageDisplayOptions.addEventListener('click', e => handleOptionSelection(e, '#collage-display-options .image-position-option'));
+            
+            mainContent.addEventListener('click', handleMainContentClick);
+            sectionsList.addEventListener('click', handleAdminListClick);
+            articlesList.addEventListener('click', handleAdminListClick);
+            collagesList.addEventListener('click', handleAdminListClick);
+            
+            // Nuevos listeners para aprobar/rechazar cambios
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.approve-section')) {
+                    const sectionId = e.target.closest('.approve-section').dataset.id;
+                    approveSectionChanges(sectionId);
+                }
+                
+                if (e.target.closest('.reject-section')) {
+                    const sectionId = e.target.closest('.reject-section').dataset.id;
+                    rejectSectionChanges(sectionId);
+                }
+            });
+        }
+
+        function handleOptionSelection(e, selector) { 
+            const option = e.target.closest(selector.split(' ')[1]); 
+            if (option) { 
+                document.querySelectorAll(selector).forEach(opt => opt.classList.remove('selected')); 
+                option.classList.add('selected'); 
+            } 
+        }
+        
+        function handleMainContentClick(e) { 
+            if (!isAdminMode) return; 
+            const button = e.target.closest('.edit-button'); 
+            if (button) { 
+                e.preventDefault(); 
+                const id = button.dataset.id; 
+                if (button.classList.contains('edit-section')) editSection(id); 
+                else if (button.classList.contains('delete-section')) deleteSection(id); 
+                else if (button.classList.contains('add-article')) showArticleModal(button.dataset.sectionId); 
+                else if (button.classList.contains('edit-article')) editArticle(id); 
+                else if (button.classList.contains('delete-article')) deleteArticle(id); 
+                else if (button.classList.contains('add-collage')) showCollageModal(); 
+            } 
+        }
+        
+        function handleAdminListClick(e) { 
+            if (!isMasterAdmin) return; 
+            const button = e.target.closest('.admin-list-btn'); 
+            if (button) { 
+                e.preventDefault(); 
+                const id = button.dataset.id; 
+                const listId = button.closest('.admin-list').id; 
+                if (listId === 'sections-list') { 
+                    if (button.classList.contains('edit')) editSection(id); 
+                    else if (button.classList.contains('delete')) deleteSection(id); 
+                    else if (button.classList.contains('password')) manageSectionPassword(id); 
+                } else if (listId === 'articles-list') { 
+                    if (button.classList.contains('edit')) editArticle(id); 
+                    else deleteArticle(id); 
+                } else if (listId === 'collages-list') { 
+                    if (button.classList.contains('edit')) editCollage(id); 
+                    else deleteCollage(id); 
+                } 
+            } 
+        }
+        
+        function applyThemeSettings() { 
+            document.body.className = `theme-${newspaperData.settings.theme || 'classic'}`; 
+            adminPanel.classList.toggle('dark-mode', newspaperData.settings.adminDarkMode); 
+            document.querySelectorAll('.theme-option').forEach(option => option.classList.toggle('selected', option.dataset.theme === (newspaperData.settings.theme || 'classic'))); 
+        }
+        
+        function updateAdminModeUI() { 
+            document.body.classList.toggle('admin-mode', isAdminMode); 
+        }
+        
+        function showToast(message, type = 'success', duration = 3500) { 
+            const toast = document.createElement('div'); 
+            toast.className = `toast ${type}`; 
+            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-times-circle'}"></i><span>${message}</span>`; 
+            document.body.appendChild(toast); 
+            setTimeout(() => toast.remove(), duration); 
+        }
+        
+        function closeModal(modalId) { 
+            const modal = document.getElementById(modalId); 
+            if (modal) { 
+                modal.style.display = 'none'; 
+                const form = modal.querySelector('form'); 
+                if (form) form.reset(); 
+            } 
+        }
+
+        // --- AUTHENTICATION & PERMISSIONS ---
+        async function toggleAdminMode(e) {
+            if (e && e.type === 'touchstart') e.preventDefault();
+            if (isAdminMode) {
+                isAdminMode = false; 
+                isMasterAdmin = false; 
+                currentEditorSectionId = null;
+                currentUser = null;
+                
+                if (unsubscribe) {
+                    unsubscribe();
+                    unsubscribe = null;
+                }
+                
+                document.body.classList.remove('admin-panel-open');
+                renderNewspaper();
+                showToast('Modo administrador desactivado');
+            } else {
+                loginModal.style.display = 'flex';
+                adminPasswordInput.focus();
+            }
+        }
+
+        async function confirmAdminLogin() {
+            const password = adminPasswordInput.value;
+            
+            // Verificar admin maestro
+            if (password === newspaperData.masterPassword) {
+                isAdminMode = true; 
+                isMasterAdmin = true; 
+                currentEditorSectionId = null;
+                
+                // Iniciar sesión anónima en Firebase si es posible
+                if (firebaseInitialized && isOnline) {
+                    try {
+                        await auth.signInAnonymously();
+                        currentUser = auth.currentUser;
+                        setupRealtimeUpdates();
+                    } catch (e) {
+                        console.error("Error en autenticación Firebase:", e);
+                    }
+                }
+                
+                renderNewspaper(); 
+                closeModal('login-modal');
+                document.body.classList.add('admin-panel-open');
+                showToast('Modo administrador maestro activado', 'success');
+                return;
+            }
+            
+            // Verificar editores de sección (requieren conexión)
+            if (!isOnline) {
+                showToast('Los editores de sección requieren conexión a internet', 'error');
+                return;
+            }
+            
+            // Verificar contraseñas de sección
+            for (const sectionId in newspaperData.sectionPasswords) {
+                if (password === newspaperData.sectionPasswords[sectionId]) {
+                    isAdminMode = true; 
+                    isMasterAdmin = false; 
+                    currentEditorSectionId = sectionId;
+                    
+                    // Para editores de sección, cargar datos más recientes
+                    if (firebaseInitialized) {
+                        try {
+                            const doc = await db.collection('newspapers').doc('current').get();
+                            if (doc.exists) {
+                                const firebaseData = doc.data();
+                                newspaperData.sections = firebaseData.sections || newspaperData.sections;
+                                newspaperData.lastUpdated = firebaseData.lastUpdated || newspaperData.lastUpdated;
+                                localStorage.setItem('newspaperData', JSON.stringify(newspaperData));
+                            }
+                        } catch (e) {
+                            console.error("Error al cargar datos para editor:", e);
+                        }
+                    }
+                    
+                    renderNewspaper(); 
+                    closeModal('login-modal');
+                    const sectionTitle = newspaperData.sections.find(s => s.id === sectionId)?.title || 'sección';
+                    showToast(`Modo editor para "${sectionTitle}" activado`, 'success');
+                    return;
+                }
+            }
+            
+            showToast('Contraseña incorrecta', 'error');
+            adminPasswordInput.focus();
+        }
+
+        async function manageSectionPassword(sectionId) {
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; }
+            const section = newspaperData.sections.find(s => s.id === sectionId);
+            if (!section) return;
+            const currentPassword = newspaperData.sectionPasswords[sectionId] || 'ninguna';
+            const newPassword = prompt(`Establecer contraseña para la sección "${section.title}":\n(Actual: ${currentPassword})\nDejar en blanco para eliminar.`, '');
+            if (newPassword !== null) {
+                if (newPassword.trim() === '') {
+                    delete newspaperData.sectionPasswords[sectionId];
+                } else {
+                    newspaperData.sectionPasswords[sectionId] = newPassword.trim();
+                }
+                await saveAllChanges();
+                showToast(`Contraseña para "${section.title}" actualizada.`, 'success');
+            }
+        }
+
+        // --- CRUD OPERATIONS ---
+        async function addNewSection() { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            const sectionName = prompt('Nombre de la nueva sección:'); 
+            if (sectionName?.trim()) { 
+                const newSection = { id: `section-${Date.now()}`, title: sectionName.trim(), articles: [] }; 
+                newspaperData.sections.push(newSection); 
+                await saveAllChanges();
+                renderNewspaper(); 
+                showToast(`Sección "${newSection.title}" añadida`, 'success'); 
+            } else if (sectionName !== null) showToast('Nombre inválido.', 'warning'); 
+        }
+        
+        function editSection(sectionId) { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            const section = newspaperData.sections.find(s => s.id === sectionId); 
+            if (section) { 
+                sectionNameInput.value = section.title; 
+                currentEditSectionId = sectionId; 
+                editSectionModal.style.display = 'flex'; 
+            } 
+        }
+        
+        async function saveSectionChanges() { 
+            if (!isMasterAdmin) return; 
+            const newName = sectionNameInput.value.trim(); 
+            const section = newspaperData.sections.find(s => s.id === currentEditSectionId); 
+            if (newName && section) { 
+                section.title = newName; 
+                section.articles.forEach(a => a.tag = newName); 
+                await saveAllChanges();
+                renderNewspaper(); 
+                closeModal('edit-section-modal'); 
+                showToast('Sección actualizada', 'success'); 
+            } 
+        }
+        
+        async function deleteSection(sectionId) { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            const section = newspaperData.sections.find(s => s.id === sectionId); 
+            if (section && confirm(`¿Seguro que quieres eliminar la sección "${section.title}"?`)) { 
+                newspaperData.sections = newspaperData.sections.filter(s => s.id !== sectionId); 
+                delete newspaperData.sectionPasswords[sectionId]; 
+                await saveAllChanges();
+                renderNewspaper(); 
+                showToast(`Sección "${section.title}" eliminada`, 'success'); 
+            } 
+        }
+
+        function findArticle(articleId) { 
+            for (const section of newspaperData.sections) { 
+                const article = section.articles.find(a => a.id === articleId); 
+                if (article) return { article, sectionId: section.id }; 
+            } 
+            return { article: null, sectionId: null }; 
+        }
+        
+        function showArticleModal(sectionIdForAdd = null) { 
+            if (!isAdminMode) return; 
+            currentEditArticleId = null; 
+            document.getElementById('article-form').reset(); 
+            articleModalTitle.textContent = 'Añadir Nuevo Artículo'; 
+            saveArticleModalButton.textContent = 'Guardar Artículo'; 
+            if (sectionIdForAdd) articleModalSectionSelect.value = sectionIdForAdd; 
+            articleModal.style.display = 'flex'; 
+        }
+        
+        function editArticle(articleId) { 
+            if (!isAdminMode) return; 
+            const { article, sectionId } = findArticle(articleId); 
+            if (article && (isMasterAdmin || currentEditorSectionId === sectionId)) { 
+                currentEditArticleId = articleId; 
+                document.getElementById('article-form').reset(); 
+                articleModalTitle.textContent = 'Editar Artículo'; 
+                saveArticleModalButton.textContent = 'Guardar Cambios'; 
+                articleModalTitleInput.value = article.title; 
+                articleModalContentTextarea.value = article.content; 
+                articleModalImageUrlInput.value = article.image || ''; 
+                articleModalSectionSelect.value = sectionId; 
+                document.querySelectorAll('#article-image-position-options .image-position-option').forEach(opt => opt.classList.toggle('selected', opt.dataset.position === article.imagePosition)); 
+                document.querySelectorAll('#article-column-options .column-option').forEach(opt => opt.classList.toggle('selected', opt.dataset.columns == (article.columns || 1))); 
+                articleModal.style.display = 'flex'; 
+            } else { 
+                showToast('No tienes permiso para editar este artículo.', 'error'); 
+            } 
+        }
+        
+        async function saveArticle() {
+            if (!isAdminMode) return;
+            
+            const title = articleModalTitleInput.value.trim();
+            const content = articleModalContentTextarea.value.trim();
+            const image = articleModalImageUrlInput.value.trim();
+            const sectionId = articleModalSectionSelect.value;
+            
+            if (!title || !content || !sectionId) {
+                showToast('Título, contenido y sección son obligatorios', 'error');
+                return;
+            }
+            
+            // Para editores de sección, verificar permisos
+            if (!isMasterAdmin && sectionId !== currentEditorSectionId) {
+                showToast('No puedes mover artículos a otra sección.', 'error');
+                return;
+            }
+            
+            const section = newspaperData.sections.find(s => s.id === sectionId);
+            if (!section) return;
+            
+            const articleData = {
+                id: currentEditArticleId || `article-${Date.now()}`,
+                title,
+                content,
+                image: image || null,
+                imagePosition: document.querySelector('#article-image-position-options .selected')?.dataset.position || 'top',
+                columns: parseInt(document.querySelector('#article-column-options .selected')?.dataset.columns || '1'),
+                tag: section.title,
+                lastEditedBy: isMasterAdmin ? 'master' : currentEditorSectionId,
+                lastEditedAt: new Date().toISOString()
+            };
+            
+            if (currentEditArticleId) {
+                const { sectionId: oldSectionId } = findArticle(currentEditArticleId);
+                if (oldSectionId !== sectionId) {
+                    const oldSection = newspaperData.sections.find(s => s.id === oldSectionId);
+                    if (oldSection) oldSection.articles = oldSection.articles.filter(a => a.id !== currentEditArticleId);
+                    section.articles.push(articleData);
+                } else {
+                    const articleIndex = section.articles.findIndex(a => a.id === currentEditArticleId);
+                    if (articleIndex > -1) section.articles[articleIndex] = articleData;
+                }
+            } else {
+                section.articles.push(articleData);
+            }
+            
+            // Marcar sección como pendiente de revisión si fue editada por un editor
+            if (!isMasterAdmin) {
+                section.needReview = true;
+                showToast('Cambios enviados para revisión', 'success');
+            } else {
+                await saveAllChanges();
+                showToast('Artículo guardado', 'success');
+            }
+            
+            renderNewspaper();
+            closeModal('article-modal');
+        }
+        
+        async function deleteArticle(articleId) { 
+            if (!isAdminMode) return; 
+            const { article, sectionId } = findArticle(articleId); 
+            if (article && (isMasterAdmin || currentEditorSectionId === sectionId)) { 
+                if (confirm(`¿Seguro que quieres eliminar el artículo "${article.title}"?`)) { 
+                    const section = newspaperData.sections.find(s => s.id === sectionId); 
+                    if (section) section.articles = section.articles.filter(a => a.id !== articleId); 
+                    await saveAllChanges();
+                    renderNewspaper(); 
+                    showToast('Artículo eliminado', 'success'); 
+                } 
+            } else { 
+                showToast('No tienes permiso para eliminar este artículo.', 'error'); 
+            } 
+        }
+
+        function showCollageModal() { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            currentEditCollageId = null; 
+            document.getElementById('collage-form').reset(); 
+            collageModalTitle.textContent = 'Añadir Galería'; 
+            saveCollageModalButton.textContent = 'Guardar Galería'; 
+            collageModal.style.display = 'flex'; 
+        }
+        
+        function editCollage(collageId) { 
+            if (!isMasterAdmin) return; 
+            const collage = newspaperData.collages.find(c => c.id === collageId); 
+            if (collage) { 
+                currentEditCollageId = collageId; 
+                document.getElementById('collage-form').reset(); 
+                collageModalTitle.textContent = 'Editar Galería'; 
+                saveCollageModalButton.textContent = 'Guardar Cambios'; 
+                collageModalTitleInput.value = collage.title; 
+                collageModalDescriptionTextarea.value = collage.description || ''; 
+                collageModalImagesTextarea.value = collage.images.join(', '); 
+                document.querySelectorAll('#collage-display-options .image-position-option').forEach(opt => opt.classList.toggle('selected', opt.dataset.display === collage.display)); 
+                collageModal.style.display = 'flex'; 
+            } 
+        }
+        
+        async function saveCollage() { 
+            if (!isMasterAdmin) return; 
+            const title = collageModalTitleInput.value.trim(); 
+            const images = collageModalImagesTextarea.value.split(',').map(u => u.trim()).filter(Boolean); 
+            if (!title || images.length === 0) { 
+                showToast('Título y al menos una imagen son obligatorios.', 'error'); 
+                return; 
+            } 
+            const collageData = { 
+                id: currentEditCollageId || `collage-${Date.now()}`, 
+                title, 
+                description: collageModalDescriptionTextarea.value.trim() || '', 
+                images, 
+                display: document.querySelector('#collage-display-options .selected')?.dataset.display || 'grid' 
+            }; 
+            if (currentEditCollageId) { 
+                const index = newspaperData.collages.findIndex(c => c.id === currentEditCollageId); 
+                if (index > -1) newspaperData.collages[index] = collageData; 
+            } else { 
+                newspaperData.collages.push(collageData); 
+            } 
+            await saveAllChanges();
+            renderNewspaper(); 
+            closeModal('collage-modal'); 
+        }
+        
+        async function deleteCollage(collageId) { 
+            if (!isMasterAdmin) return; 
+            const collage = newspaperData.collages.find(c => c.id === collageId); 
+            if (collage && confirm(`¿Eliminar galería "${collage.title}"?`)) { 
+                newspaperData.collages = newspaperData.collages.filter(c => c.id !== collageId); 
+                await saveAllChanges();
+                renderNewspaper(); 
+                showToast('Galería eliminada.', 'success'); 
+            } 
+        }
+        
+        // --- FUNCIONES DE COLABORACIÓN ---
+        async function approveSectionChanges(sectionId) {
+            if (!isMasterAdmin) return;
+            
+            const section = newspaperData.sections.find(s => s.id === sectionId);
+            if (section) {
+                section.needReview = false;
+                await saveAllChanges();
+                renderNewspaper();
+                showToast('Cambios aprobados y publicados', 'success');
+            }
+        }
+
+        async function rejectSectionChanges(sectionId) {
+            if (!isMasterAdmin) return;
+            
+            // Opcional: cargar versión anterior de Firebase
+            if (firebaseInitialized && isOnline) {
+                try {
+                    const doc = await db.collection('newspapers').doc('current').get();
+                    if (doc.exists) {
+                        const firebaseData = doc.data();
+                        const firebaseSection = firebaseData.sections.find(s => s.id === sectionId);
+                        if (firebaseSection) {
+                            const localSectionIndex = newspaperData.sections.findIndex(s => s.id === sectionId);
+                            if (localSectionIndex > -1) {
+                                newspaperData.sections[localSectionIndex] = firebaseSection;
+                                await saveAllChanges();
+                                renderNewspaper();
+                                showToast('Cambios rechazados, se restauró versión anterior', 'success');
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error al cargar versión anterior:", e);
+                }
+            }
+            
+            // Si no se pudo cargar de Firebase, simplemente quitar el flag de revisión
+            const section = newspaperData.sections.find(s => s.id === sectionId);
+            if (section) {
+                section.needReview = false;
+                await saveAllChanges();
+                renderNewspaper();
+                showToast('Cambios rechazados', 'success');
+            }
+        }
+        
+        // --- EXPORT ---
+        function downloadNewspaperHTML() { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            showToast('Preparando HTML...', 'success'); 
+            const clone = document.documentElement.cloneNode(true); 
+            clone.querySelectorAll('.admin-toggle, .admin-panel, .modal, .edit-buttons').forEach(el => el.remove()); 
+            const body = clone.querySelector('body'); 
+            if (body) { 
+                body.classList.remove('admin-mode', 'admin-panel-open'); 
+                const header = clone.querySelector('header'); 
+                if (header) header.style.position = 'static'; 
+            } 
+            clone.querySelectorAll('script').forEach(s => { 
+                const src = s.getAttribute('src'); 
+                const keep = src && (src.includes('font-awesome') || src.includes('jquery.min.js') || src.includes('slick.min.js')); 
+                if (!keep) s.remove(); 
+            }); 
+            const initScript = document.createElement('script'); 
+            initScript.textContent = `document.addEventListener('DOMContentLoaded', () => $('.carousel').slick({ dots: true, infinite: true, speed: 500, autoplay: true, arrows: true, adaptiveHeight: true }));`; 
+            clone.querySelector('body').appendChild(initScript); 
+            const htmlContent = `<!DOCTYPE html>\n${clone.outerHTML}`; 
+            const blob = new Blob([htmlContent], { type: 'text/html' }); 
+            const a = document.createElement('a'); 
+            a.href = URL.createObjectURL(blob); 
+            a.download = 'periodico_escolar.html'; 
+            document.body.appendChild(a); 
+            a.click(); 
+            document.body.removeChild(a); 
+        }
+        
+        function downloadNewspaperPDF() { 
+            if (!isMasterAdmin) { showToast('Acceso denegado.', 'error'); return; } 
+            showToast('Generando PDF...', 'success', 5000); 
+            const element = document.getElementById('main-content').cloneNode(true); 
+            element.querySelectorAll('.edit-buttons').forEach(el => el.remove()); 
+            const opt = { margin: 10, filename: 'periodico_escolar.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, logging: false }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } }; 
+            html2pdf().set(opt).from(element).save().then(() => showToast('PDF descargado.', 'success')).catch(() => showToast('Error al generar PDF.', 'error')); 
+        }
+        
+        // --- START APP ---
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
